@@ -10,7 +10,7 @@ export const APP_DEFINITIONS_CONFIG: AppDefinition[] = [
   {id: 'documents', name: 'Projects', icon: '📁', color: '#f1f8e9'},
   {id: 'notepad_app', name: 'Resume', icon: '📝', color: '#fffde7'},
   {id: 'settings_app', name: 'Skills', icon: '⚙️', color: '#e7f3ff'}, // Renamed for portfolio context
-  {id: 'trash_bin', name: 'Contact', icon: '🗑️', color: '#ffebee'},
+  {id: 'trash_bin', name: 'Contact', icon: '✉️', color: '#ffebee'},
   {id: 'web_browser_app', name: 'Links', icon: '🌐', color: '#e0f7fa'},
   {id: 'calculator_app', name: 'Experience', icon: '🧮', color: '#f5f5f5'},
   {id: 'travel_app', name: 'Journey', icon: '✈️', color: '#e8f5e9'},

@@ -239,12 +239,81 @@ const getResumeBrowserHTML = (): string => {
   `;
 };
 
-const DesktopView: React.FC<{onAppOpen: (app: AppDefinition) => void}> = ({
+// --- Static content helpers for the Contact app (trash_bin) ---
+const CONTACT_EMAIL = 'lasithdilshan20@gmail.com';
+const getContactHTML = (): string => {
+  return `
+    <div class="llm-container">
+      <div class="llm-row">
+        <div class="icon" data-interaction-id="open_contact_email" data-interaction-type="folder_open">
+          <div class="icon-image">✉️</div>
+          <div class="icon-label">Email</div>
+        </div>
+        <div class="icon" data-interaction-id="open_contact_linkedin" data-interaction-type="folder_open">
+          <div class="icon-image">🔗</div>
+          <div class="icon-label">LinkedIn</div>
+        </div>
+      </div>
+      <p class="llm-text" style="margin-top:4px; color:#334155;">Direct email: <span style="font-weight:600;">${CONTACT_EMAIL}</span></p>
+    </div>
+  `;
+};
+
+// --- Static content helpers for the Links app (web_browser_app) ---
+const LINKS = {
+  medium: 'https://lasithdilshan20.medium.com/',
+  linkedin: 'https://www.linkedin.com/in/lasitha-wijenayake-b8a43bb5/',
+  github: 'https://github.com/lasithdilshan20',
+  npm: 'https://www.npmjs.com/settings/lasithdilshan20/packages',
+  gravatar: 'https://gravatar.com/lasitha20',
+  x: 'https://x.com/LasithDilshan20',
+};
+
+const getLinksHTML = (): string => {
+  return `
+    <div class="llm-container">
+      <div class="llm-row" style="flex-wrap: wrap;">
+        <div class="icon" data-interaction-id="open_link_medium" data-interaction-type="folder_open">
+          <div class="icon-image">📝</div>
+          <div class="icon-label">Medium Blog</div>
+        </div>
+        <div class="icon" data-interaction-id="open_link_linkedin" data-interaction-type="folder_open">
+          <div class="icon-image">💼</div>
+          <div class="icon-label">LinkedIn</div>
+        </div>
+        <div class="icon" data-interaction-id="open_link_github" data-interaction-type="folder_open">
+          <div class="icon-image">
+            <img src="profile/github.png" alt="GitHub" class="block mx-auto w-12 h-12 mb-2 object-contain rounded-md shadow" />
+          </div>
+          <div class="icon-label">GitHub</div>
+        </div>
+        <div class="icon" data-interaction-id="open_link_npm" data-interaction-type="folder_open">
+          <div class="icon-image">
+            <img src="profile/npm.png" alt="NPM" class="block mx-auto w-12 h-12 mb-2 object-contain rounded-md shadow" />
+          </div>
+          <div class="icon-label">npmjs</div>
+        </div>
+        <div class="icon" data-interaction-id="open_link_gravatar" data-interaction-type="folder_open">
+          <div class="icon-image">👤</div>
+          <div class="icon-label">Gravatar</div>
+        </div>
+        <div class="icon" data-interaction-id="open_link_x" data-interaction-type="folder_open">
+          <div class="icon-image">✖️</div>
+          <div class="icon-label">X</div>
+        </div>
+      </div>
+      <p class="llm-text" style="margin-top:4px; color:#475569;"></p>
+    </div>
+  `;
+};
+
+const DesktopView: React.FC<{onAppOpen: (app: AppDefinition) => void; iconSize: 'sm' | 'md' | 'lg';}> = ({
   onAppOpen,
+  iconSize,
 }) => (
   <div className="flex flex-wrap content-start p-4">
     {APP_DEFINITIONS_CONFIG.map((app) => (
-      <Icon key={app.id} app={app} onInteract={() => onAppOpen(app)} />
+      <Icon key={app.id} app={app} onInteract={() => onAppOpen(app)} iconSize={iconSize} />
     ))}
   </div>
 );
@@ -262,6 +331,10 @@ const App: React.FC = () => {
   const [isParametersOpen, setIsParametersOpen] = useState<boolean>(false);
   const [currentMaxHistoryLength, setCurrentMaxHistoryLength] =
     useState<number>(INITIAL_MAX_HISTORY_LENGTH);
+
+  // UI Theme and Icon size settings (Settings panel)
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [iconSize, setIconSize] = useState<'sm' | 'md' | 'lg'>('md');
 
   // Statefulness feature state
   const [isStatefulnessEnabled, setIsStatefulnessEnabled] =
@@ -406,6 +479,35 @@ const App: React.FC = () => {
         }
       }
 
+      // Special-case interactions for the Contact app to avoid API usage
+      if (activeApp?.id === 'trash_bin') {
+        if (interactionData.id === 'open_contact_email') {
+          try { window.location.href = 'mailto:' + CONTACT_EMAIL; } catch (e) { console.warn('Unable to open mail client', e); }
+          setLlmContent(getContactHTML());
+          setIsLoading(false);
+          setError(null);
+          return;
+        }
+        if (interactionData.id === 'open_contact_linkedin') {
+          try { window.open(LINKEDIN_URL, '_blank'); } catch (e) { console.warn('Unable to open external link', e); }
+          setLlmContent(getContactHTML());
+          setIsLoading(false);
+          setError(null);
+          return;
+        }
+      }
+
+      // Special-case interactions for the Links app to avoid API usage
+      if (activeApp?.id === 'web_browser_app') {
+        const open = (url: string) => { try { window.open(url, '_blank'); } catch (e) { console.warn('Unable to open external link', e); } };
+        if (interactionData.id === 'open_link_medium') { open(LINKS.medium); setLlmContent(getLinksHTML()); setIsLoading(false); setError(null); return; }
+        if (interactionData.id === 'open_link_linkedin') { open(LINKS.linkedin); setLlmContent(getLinksHTML()); setIsLoading(false); setError(null); return; }
+        if (interactionData.id === 'open_link_github') { open(LINKS.github); setLlmContent(getLinksHTML()); setIsLoading(false); setError(null); return; }
+        if (interactionData.id === 'open_link_npm') { open(LINKS.npm); setLlmContent(getLinksHTML()); setIsLoading(false); setError(null); return; }
+        if (interactionData.id === 'open_link_gravatar') { open(LINKS.gravatar); setLlmContent(getLinksHTML()); setIsLoading(false); setError(null); return; }
+        if (interactionData.id === 'open_link_x') { open(LINKS.x); setLlmContent(getLinksHTML()); setIsLoading(false); setError(null); return; }
+      }
+
       const newHistory = [
         interactionData,
         ...interactionHistory.slice(0, currentMaxHistoryLength - 1),
@@ -469,6 +571,42 @@ const App: React.FC = () => {
       if (isParametersOpen) setIsParametersOpen(false);
       setActiveApp(app);
       setLlmContent(getResumeInitialHTML());
+      setError(null);
+      setIsLoading(false);
+      setInteractionHistory([]);
+      setCurrentAppPath([app.id]);
+      return;
+    }
+
+    // Special-case: Skills app should not use API. Render static skills view.
+    if (app.id === 'settings_app') {
+      if (isParametersOpen) setIsParametersOpen(false);
+      setActiveApp(app);
+      setLlmContent(getSkillsHTML());
+      setError(null);
+      setIsLoading(false);
+      setInteractionHistory([]);
+      setCurrentAppPath([app.id]);
+      return;
+    }
+
+    // Special-case: Contact app should not use API. Render static contact view.
+    if (app.id === 'trash_bin') {
+      if (isParametersOpen) setIsParametersOpen(false);
+      setActiveApp(app);
+      setLlmContent(getContactHTML());
+      setError(null);
+      setIsLoading(false);
+      setInteractionHistory([]);
+      setCurrentAppPath([app.id]);
+      return;
+    }
+
+    // Special-case: Links app should not use API. Render static links view.
+    if (app.id === 'web_browser_app') {
+      if (isParametersOpen) setIsParametersOpen(false);
+      setActiveApp(app);
+      setLlmContent(getLinksHTML());
       setError(null);
       setIsLoading(false);
       setInteractionHistory([]);
@@ -557,7 +695,7 @@ const App: React.FC = () => {
     : activeApp
       ? activeApp.name
       : "Lasitha's Computer";
-  const contentBgColor = '#ffffff';
+  const contentBgColor = theme === 'dark' ? '#0f172a' : '#ffffff';
 
   const handleMasterClose = () => {
     if (isParametersOpen) {
@@ -568,7 +706,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="bg-white w-full min-h-screen flex items-center justify-center p-4">
+    <div className={`${theme === 'dark' ? 'theme-dark' : ''} w-full min-h-screen flex items-center justify-center p-4`}>
       <Window
         title={windowTitle}
         onClose={handleMasterClose}
@@ -582,14 +720,14 @@ const App: React.FC = () => {
           style={{backgroundColor: contentBgColor}}>
           {isParametersOpen ? (
             <ParametersPanel
-              currentLength={currentMaxHistoryLength}
-              onUpdateHistoryLength={handleUpdateHistoryLength}
+              theme={theme}
+              onSetTheme={setTheme}
+              iconSize={iconSize}
+              onSetIconSize={setIconSize}
               onClosePanel={handleToggleParametersPanel}
-              isStatefulnessEnabled={isStatefulnessEnabled}
-              onSetStatefulness={handleSetStatefulness}
             />
           ) : !activeApp ? (
-            <DesktopView onAppOpen={handleAppOpen} />
+            <DesktopView onAppOpen={handleAppOpen} iconSize={iconSize} />
           ) : (
             <>
               {isLoading && llmContent.length === 0 && (
@@ -619,3 +757,76 @@ const App: React.FC = () => {
 };
 
 export default App;
+
+
+// --- Static content helpers for the Skills app (settings_app) ---
+const getSkillsHTML = (): string => {
+  return `
+    <div class="llm-container">
+      <p class="llm-title">Core Skills</p>
+      <div class="llm-row" style="flex-wrap: wrap; align-items: stretch;">
+        <div class="p-3 m-2 rounded-lg border border-slate-200 bg-white shadow-sm min-w-[220px] flex-1">
+          <p class="llm-text" style="margin-bottom:6px;"><span style="font-size:18px;">🧪</span> <strong>Cypress Automation</strong></p>
+          <div class="w-full h-2 bg-slate-200 rounded"><div class="h-2 bg-blue-500 rounded" style="width:95%"></div></div>
+          <p class="llm-text" style="margin-top:6px; color:#475569;">End‑to‑end, component, and API tests; custom utilities and plugins.</p>
+        </div>
+        <div class="p-3 m-2 rounded-lg border border-slate-200 bg-white shadow-sm min-w-[220px] flex-1">
+          <p class="llm-text" style="margin-bottom:6px;"><span style="font-size:18px;">💻</span> <strong>JavaScript / TypeScript</strong></p>
+          <div class="w-full h-2 bg-slate-200 rounded"><div class="h-2 bg-blue-500 rounded" style="width:90%"></div></div>
+          <p class="llm-text" style="margin-top:6px; color:#475569;">Libraries, tooling, typings, Node.js ecosystem.</p>
+        </div>
+        <div class="p-3 m-2 rounded-lg border border-slate-200 bg-white shadow-sm min-w-[220px] flex-1">
+          <p class="llm-text" style="margin-bottom:6px;"><span style="font-size:18px;">🔗</span> <strong>API Testing</strong></p>
+          <div class="w-full h-2 bg-slate-200 rounded"><div class="h-2 bg-blue-500 rounded" style="width:85%"></div></div>
+          <p class="llm-text" style="margin-top:6px; color:#475569;">Contract, integration, and workflow validation.</p>
+        </div>
+        <div class="p-3 m-2 rounded-lg border border-slate-200 bg-white shadow-sm min-w-[220px] flex-1">
+          <p class="llm-text" style="margin-bottom:6px;"><span style="font-size:18px;">⚙️</span> <strong>CI/CD (GitHub Actions)</strong></p>
+          <div class="w-full h-2 bg-slate-200 rounded"><div class="h-2 bg-blue-500 rounded" style="width:80%"></div></div>
+          <p class="llm-text" style="margin-top:6px; color:#475569;">Pipeline design for reliable, scalable test runs.</p>
+        </div>
+        <div class="p-3 m-2 rounded-lg border border-slate-200 bg-white shadow-sm min-w-[220px] flex-1">
+          <p class="llm-text" style="margin-bottom:6px;"><span style="font-size:18px;">📦</span> <strong>NPM Publishing & OSS</strong></p>
+          <div class="w-full h-2 bg-slate-200 rounded"><div class="h-2 bg-blue-500 rounded" style="width:85%"></div></div>
+          <p class="llm-text" style="margin-top:6px; color:#475569;">Author of Cypress plugins; versioning and distribution.</p>
+        </div>
+        <div class="p-3 m-2 rounded-lg border border-slate-200 bg-white shadow-sm min-w-[220px] flex-1">
+          <p class="llm-text" style="margin-bottom:6px;"><span style="font-size:18px;">📊</span> <strong>Reporting & Insights</strong></p>
+          <div class="w-full h-2 bg-slate-200 rounded"><div class="h-2 bg-blue-500 rounded" style="width:80%"></div></div>
+          <p class="llm-text" style="margin-top:6px; color:#475569;">Actionable test reports and result analytics.</p>
+        </div>
+        <div class="p-3 m-2 rounded-lg border border-slate-200 bg-white shadow-sm min-w-[220px] flex-1">
+          <p class="llm-text" style="margin-bottom:6px;"><span style="font-size:18px;">🤖</span> <strong>RPA Fundamentals</strong></p>
+          <div class="w-full h-2 bg-slate-200 rounded"><div class="h-2 bg-blue-500 rounded" style="width:70%"></div></div>
+          <p class="llm-text" style="margin-top:6px; color:#475569;">Automation mindset beyond testing workflows.</p>
+        </div>
+        <div class="p-3 m-2 rounded-lg border border-slate-200 bg-white shadow-sm min-w-[220px] flex-1">
+          <p class="llm-text" style="margin-bottom:6px;"><span style="font-size:18px;">🏗️</span> <strong>Solution Architecture</strong></p>
+          <div class="w-full h-2 bg-slate-200 rounded"><div class="h-2 bg-blue-500 rounded" style="width:70%"></div></div>
+          <p class="llm-text" style="margin-top:6px; color:#475569;">Designing scalable test frameworks aligned to product goals.</p>
+        </div>
+        <div class="p-3 m-2 rounded-lg border border-slate-200 bg-white shadow-sm min-w-[220px] flex-1">
+          <p class="llm-text" style="margin-bottom:6px;"><span style="font-size:18px;">🤝</span> <strong>Collaboration & QA Strategy</strong></p>
+          <div class="w-full h-2 bg-slate-200 rounded"><div class="h-2 bg-blue-500 rounded" style="width:85%"></div></div>
+          <p class="llm-text" style="margin-top:6px; color:#475569;">Partnering with product and engineering for quality at scale.</p>
+        </div>
+      </div>
+
+      <p class="llm-title" style="margin-top:6px;">Toolbox</p>
+      <div class="llm-row" style="flex-wrap: wrap;">
+        <span class="llm-text px-2 py-1 m-1 rounded-md bg-blue-50 text-blue-700 border border-blue-200">Cypress</span>
+        <span class="llm-text px-2 py-1 m-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">JavaScript</span>
+        <span class="llm-text px-2 py-1 m-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">TypeScript</span>
+        <span class="llm-text px-2 py-1 m-1 rounded-md bg-orange-50 text-orange-700 border border-orange-200">Node.js</span>
+        <span class="llm-text px-2 py-1 m-1 rounded-md bg-red-50 text-red-700 border border-red-200">NPM</span>
+        <span class="llm-text px-2 py-1 m-1 rounded-md bg-slate-50 text-slate-700 border border-slate-200">REST / JSON</span>
+        <span class="llm-text px-2 py-1 m-1 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200">GitHub Actions</span>
+        <span class="llm-text px-2 py-1 m-1 rounded-md bg-sky-50 text-sky-700 border border-sky-200">Git</span>
+        <span class="llm-text px-2 py-1 m-1 rounded-md bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200">Reporting</span>
+        <span class="llm-text px-2 py-1 m-1 rounded-md bg-cyan-50 text-cyan-700 border border-cyan-200">HTML/CSS</span>
+        <span class="llm-text px-2 py-1 m-1 rounded-md bg-violet-50 text-violet-700 border border-violet-200">VS Code</span>
+      </div>
+
+    </div>
+  `;
+};

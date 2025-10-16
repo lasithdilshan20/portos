@@ -43,18 +43,18 @@ export const Window: React.FC<WindowProps> = ({
   isParametersPanelOpen,
 }) => {
   return (
-    <div className="w-[800px] h-[600px] bg-white border border-gray-300 rounded-xl shadow-2xl flex flex-col relative overflow-hidden font-sans backdrop-blur-sm bg-white/80">
+    <div className="window-surface w-[800px] h-[600px] bg-white/90 border border-gray-300/80 rounded-2xl shadow-[0_20px_40px_rgba(15,23,42,0.25)] flex flex-col relative overflow-hidden font-sans backdrop-blur-md">
       {/* Title Bar */}
-      <div className="bg-gray-800/90 text-white py-2 px-4 font-semibold text-base flex justify-between items-center select-none cursor-default rounded-t-xl flex-shrink-0">
+      <div className="text-white py-2 px-4 font-semibold text-base flex justify-between items-center select-none cursor-default rounded-t-2xl flex-shrink-0" style={{background: 'linear-gradient(180deg, #4b5563 0%, #3b4250 60%, #2f3542 100%)', boxShadow: 'inset 0 -1px 0 rgba(255,255,255,0.08)'}}>
         <span className="title-bar-text">{title}</span>
         {/* "X" button removed from here */}
       </div>
 
       {/* Menu Bar */}
-      <div className="bg-gray-100/80 py-2 px-3 border-b border-gray-200 select-none flex gap-4 flex-shrink-0 text-sm text-gray-700 items-center">
+      <div className="menu-bar bg-gray-50/90 py-2 px-3 border-b border-gray-200/80 select-none flex gap-4 flex-shrink-0 text-sm text-gray-700 items-center">
         {!isParametersPanelOpen && (
           <MenuItem onClick={onToggleParameters}>
-            <u>P</u>arameters
+            <span role='img' aria-label='gear'>⚙️</span> Settings
           </MenuItem>
         )}
         {isAppOpen && (
